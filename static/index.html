@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.6/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.6/dist/vuetify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/x-template" id="app-template">
+        <v-app>
+            <v-content>
+                <v-btn color="success" @click="showAdd = true">
+                    افزودن
+                </v-btn>
+
+                <v-table>
+                    <thead>
+                      <tr>
+                        <th class="text-center">
+                          title
+                        </th>
+                        <th class="text-center">
+                          content
+                        </th>
+                        <th class="text-center">
+                          action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="item in items"
+                        :key="item.title"
+                      >
+                        <td class="text-center">{{ item.title }}</td>
+                        <td class="text-center">{{ item.content }}</td>
+                        <td class="text-center">
+                            <v-btn icon class="mx-1">
+                                <v-icon color="green">mdi-pen</v-icon>
+                            </v-btn>
+                            <v-btn icon class="mx-1">
+                                <v-icon color="error">mdi-delete</v-icon>
+                            </v-btn>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                <v-dialog v-model="showAdd" v-if="showAdd" scrollable persistent width="auto"
+                    transition="dialog-transition">
+                    <v-card class="mx-auto" width="400">
+                        <v-toolbar dark>
+                            <v-toolbar-title>افزودن مطلب</v-toolbar-title>
+                            <v-spacer></v-spacer>
+                            <v-btn icon  @click="showAdd = false">
+                                <v-icon color="error">mdi-close</v-icon>
+                            </v-btn>
+                        </v-toolbar>
+                        <v-card-text>
+                            <v-text-field label="عنوان" variant="outlined" v-model="title"></v-text-field>
+                            <v-textarea label="متن" variant="outlined" v-model="content"></v-textarea>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn variant="outlined" @click="AddItem">
+                                ثبت
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-content>
+        </v-app>
+    </script>
+    <script>
+        const BaseURL = "http://127.0.0.1:5000/";
+        const { createApp } = Vue;
+        const { createVuetify } = Vuetify;
+        const vuetify = createVuetify({
+            locale: {
+                locale: 'fa',
+                fallback: 'fa',
+                rtl: {fa: true},
+            },
+        });
+        const app = createApp({
+            data() {
+                return {
+                    showAdd:false,
+
+                    loading:false,
+                    title: "",
+                    content: "",
+                    items:[],
+                }
+            },
+            methods:{
+                ResetForm(){
+                    this.title = "";
+                    this.content = "";
+                    this.showAdd = false;
+                },
+                AddItem() {
+                    this.loading = true;
+                    axios.post(BaseURL,
+                        {title:this.title,content:this.content}
+                    ).then(res=>{
+                        this.loading = false;
+                        this.GetItems();
+                        this.ResetForm();
+                    })
+                    .catch(error=> {
+                        this.loading = false;
+                        console.log(error);
+                    });
+                },
+                GetItems() {
+                    this.loading = true;
+                    axios.get(BaseURL+"/items").then(res=>{
+                        this.loading = false;
+                        this.items = res.data.data;
+                    })
+                    .catch(error=> {
+                        this.loading = false;
+                        console.log(error);
+                    });
+                }
+            },
+            created(){
+                this.GetItems();
+            },
+            template: "#app-template",
+        })
+        .use(vuetify)
+        .mount("#app");
+    </script>
+</body>
+</html>
