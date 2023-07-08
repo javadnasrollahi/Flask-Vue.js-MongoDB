@@ -17,7 +17,7 @@ to get the dependencies.
 Finally run the api with
 
 ```sh
-python api.py
+python app.py
 ```
 
 ## Example

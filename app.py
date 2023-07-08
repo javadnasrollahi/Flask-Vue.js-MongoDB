@@ -7,15 +7,6 @@ db = "testdb"
 url = "localhost"
 port = 27017
 
-class SetEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
-        return json.JSONEncoder.default(self, obj)
-class BLOG(BaseModel):
-    title: str
-    content: str
-
 mycol = None
 def connect():
     global mycol
@@ -39,7 +30,6 @@ def root():
 def get_items():
     result = []
     for x in mycol.find():
-        print(type(x["_id"]))
         result.append({
             "_id":str((x["_id"])),
             "title":x["title"],
@@ -51,7 +41,6 @@ def get_items():
 @app.route("/", methods=["POST"])
 def post_add():
     x = mycol.insert_one(dict(request.get_json()))
-    print(x )
     return jsonify({"data":"","success":True}), 201
 
 if __name__ == "__main__":
